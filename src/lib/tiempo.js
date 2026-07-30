@@ -40,6 +40,32 @@ export function horaCorta(ms) {
   })
 }
 
+/** millis -> "lun, 12 ene". */
+export function fechaCorta(ms) {
+  return new Date(ms).toLocaleDateString('es', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+}
+
+/** millis -> "lunes, 12 de enero". Es el que se ve en hist-fecha. */
+export function fechaLarga(ms) {
+  return new Date(ms).toLocaleDateString('es', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+}
+
+/** Toma el día de `fecha` y la hora de `hora`. */
+export function conFechaDe(fecha, hora) {
+  const d = new Date(fecha)
+  const h = new Date(hora)
+  d.setHours(h.getHours(), h.getMinutes(), 0, 0)
+  return d.getTime()
+}
+
 /** millis -> valor de <input type="datetime-local"> (hora local, sin zona). */
 export function aValorInputLocal(ms) {
   const d = new Date(ms)

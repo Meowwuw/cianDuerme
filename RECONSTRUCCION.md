@@ -99,7 +99,7 @@ Del bundle y del CSS se desprende:
   link sutil "desde HH:MM · ajustar".
 - **Hoy**: tarjetas de resumen en grilla de 3, notas de fase tipo
   "Anoche estiró un buen tramo de sueño."
-- **Historial**: navegación por día (Día anterior / Día siguiente), date picker
+- **Historial**: navegación por día (`hist-nav`, aria-labels "Día anterior" / "Día siguiente"), `hist-fecha` con "Hoy" o la fecha larga, y la lista de registros compartida con Hoy. **No** lleva date picker.
   con react-day-picker v9 (con overrides de tema en el CSS), lista de registros,
   editar y borrar, "Sin registros este día."
 - **Ajustes**: tema, mascota (Patito / Gatito / Ovejita), notas de contexto,
@@ -205,3 +205,14 @@ No tocar hasta que la app esté completa y verificada contra producción.
   `ventanaNoche`, o 07:00): cada tramo pertenece entero al día donde arrancó.
   Métricas objetivo: total 24 h, noche vs siestas por separado, tramo más largo.
   Los datos crudos (`inicio`/`fin`) no cambian, solo la agregación.
+
+## Date picker (verificado en el bundle)
+
+Tres usos, ninguno en Historial:
+- editor de registro (sección "Inicio")
+- formulario de agregar bebé (fecha de nacimiento)
+
+El español sale de `import { es } from 'react-day-picker/locale'` pasado como
+`locale={es}`. Ese objeto trae `localize`, `formatLong`, `options` y `labels`
+("Elegir el mes", "Ir al mes siguiente", "Número de semana"). No hay textos
+de calendario escritos a mano.
