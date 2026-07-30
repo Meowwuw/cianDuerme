@@ -19,6 +19,18 @@ export function cronoTexto(ms) {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
 }
 
+/** millis -> "1h 05m" / "23m 10s" / "45s". Para duraciones, no para el crono. */
+export function duracionLarga(ms) {
+  if (ms == null || ms < 0) ms = 0
+  const totalSeg = Math.floor(ms / 1000)
+  const h = Math.floor(totalSeg / 3600)
+  const m = Math.floor((totalSeg % 3600) / 60)
+  const s = totalSeg % 60
+  if (h > 0) return `${h}h ${String(m).padStart(2, '0')}m`
+  if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`
+  return `${s}s`
+}
+
 /** millis -> "20:58". */
 export function horaCorta(ms) {
   if (ms == null) return '--:--'
