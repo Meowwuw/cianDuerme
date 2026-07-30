@@ -1,29 +1,61 @@
-// TODO: PASO 2 — este archivo es un andamio provisorio, no es el App original.
-//
-// La estructura real está al final del bundle (líneas 44765–44809 de
-// recuperado/assets/index-BLha0cqC.js) y es:
-//
-//   App()            -> user ? <DataProvider><Ruteo/></DataProvider> : <Login/>
-//   Ruteo()          -> babiesCargando ? <Cargando/>
-//                       : codigoUrl     ? <Unirse codigoInicial={codigoUrl} onListo={limpiarCodigoUrl}/>
-//                       : babies.length === 0 ? <Unirse/>
-//                       : <Tabs/>
-//   Tabs()           -> useState('ahora'); bienvenidaCargada
-//                       ? (bienvenidaVista
-//                            ? <div className="app"><Header onIrAjustes={...}/>
-//                                <main className="app-main"><Pantalla/></main>
-//                                <BarraNav activa={...} onChange={...}/></div>
-//                            : <Bienvenida onEmpezar={marcarBienvenida}/>)
-//                       : <Cargando/>
-//
-// Requiere: DataContext, Login, Cargando, Unirse, Header, BarraNav, Bienvenida
-// y las 4 pantallas. Ninguno existe todavía.
+import { useState } from 'react'
+import { useAuth } from './context/AuthContext'
+import { DataProvider, useData } from './context/DataContext'
+import Cargando from './components/Cargando'
+import Header from './components/Header'
+import BarraTabs from './components/BarraTabs'
+import Login from './screens/Login'
+import Bienvenida from './screens/Bienvenida'
+import Onboarding from './screens/Onboarding'
+import Ahora from './screens/Ahora'
+import Hoy from './screens/Hoy'
+import Historial from './screens/Historial'
+import Ajustes from './screens/Ajustes'
+
+const PANTALLAS = {
+  ahora: Ahora,
+  hoy: Hoy,
+  historial: Historial,
+  ajustes: Ajustes,
+}
 
 export default function App() {
+  const { user, cargando } = useAuth()
+
+  if (cargando) return <Cargando />
+  if (!user) return <Login />
+
   return (
-    <div style={{ padding: 24, fontFamily: 'var(--fuente-body)' }}>
-      <h1 style={{ fontFamily: 'var(--fuente-titulo)' }}>Cian duerme</h1>
-      <p>Andamio del paso 1: Vite, fuentes, CSS y tema cargados.</p>
+    <DataProvider>
+      <Ruteo />
+    </DataProvider>
+  )
+}
+
+function Ruteo() {
+  const { babies, babiesCargando, codigoUrl, limpiarCodigoUrl } = useData()
+
+  if (babiesCargando) return <Cargando />
+  if (codigoUrl) return <Onboarding codigoInicial={codigoUrl} onListo={limpiarCodigoUrl} />
+  if (babies.length === 0) return <Onboarding />
+  return <Tabs />
+}
+
+function Tabs() {
+  const [activa, setActiva] = useState('ahora')
+  const { bienvenidaVista, bienvenidaCargada, marcarBienvenida } = useData()
+  const Pantalla = PANTALLAS[activa]
+
+  if (!bienvenidaCargada) return <Cargando />
+  if (!bienvenidaVista) return <Bienvenida onEmpezar={marcarBienvenida} />
+
+  return (
+    <div className="app">
+      <Header onIrAjustes={() => setActiva('ajustes')} />
+      <main className="app-main">
+        <Pantalla />
+      </main>
+      <BarraTabs activa={activa} onChange={setActiva} />
     </div>
   )
 }
