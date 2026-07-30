@@ -1,10 +1,6 @@
 import { useState } from 'react'
 import { gradienteDe, useTheme } from '../context/ThemeContext'
 
-// TODO: los 9 .webp (pato/gato/oveja × dormido/despierto/tomando) NO están en
-// recuperado/assets — el build recuperado solo trae lo que el sw precacheaba, y
-// los .webp no entraban en globPatterns. El glob queda vacío y cae siempre al
-// SVG de abajo, que es el mismo fallback que tenía el original.
 const modulos = import.meta.glob('../assets/*.webp', {
   eager: true,
   query: '?url',
