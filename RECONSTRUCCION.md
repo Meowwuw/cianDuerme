@@ -216,3 +216,7 @@ El español sale de `import { es } from 'react-day-picker/locale'` pasado como
 `locale={es}`. Ese objeto trae `localize`, `formatLong`, `options` y `labels`
 ("Elegir el mes", "Ir al mes siguiente", "Número de semana"). No hay textos
 de calendario escritos a mano.
+- **Bundle 74 kB más grande que el original con la app incompleta** (944 kB vs
+  870 kB al terminar el paso 5). Revisar imports de barril (`date-fns`,
+  locales, lucide) con vite-bundle-visualizer antes de dar por cerrada la
+  reconstrucción.
