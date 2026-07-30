@@ -106,7 +106,7 @@ Del bundle y del CSS se desprende:
   datos del bebé, invitar cuidador (generar / copiar link / revocar / regenerar),
   unirse con código, respaldo (importar / exportar JSON), zona de datos,
   política de privacidad.
-- **Ajuste de hora**: atajos ±5 min y ±1 h ("Sumar cinco minutos", "Restar una
+- **Ajuste de hora**: el modal de Ahora es solo `<input type="datetime-local">` con `max` en el ahora. Los steppers ±5 min / ±1 h y los chips "Hace 5 min / 15 / 30 / 1 h" pertenecen al **editor de registro** (clases `timepicker`, `tp-grupo`, `tp-step`, `tp-num`, `editor-atajos`).
   hora", etc. son los `aria-label`).
 - **Accesibilidad**: hay `aria-label` en español por todos lados. Preservalos
   literalmente, están en el bundle.
