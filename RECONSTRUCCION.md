@@ -191,3 +191,17 @@ comparación y listá los textos del original que todavía no aparecen en `src/`
 - No agregues TypeScript, Tailwind, ni un router (la navegación por tabs es
   estado local, no `react-router` — verificá esto en el bundle antes de asumir).
 - Preservá los textos en español **exactos**, incluidos los `aria-label`.
+
+## Bugs del original a arreglar DESPUÉS de terminar la reconstrucción
+
+No tocar hasta que la app esté completa y verificada contra producción.
+
+- `nSuenos` cuenta entero un sueño que cruza medianoche, en ambos días,
+  mientras que la duración sí se recorta. Un sueño 21:00→06:00 aparece como
+  "1 sueño" el día 10 y "1 sueño" el 11.
+- Pluralización: revisar si dice "1 sueños".
+- **Corte de día (decisión de producto, no bug de transcripción).** Medianoche
+  parte al medio el sueño nocturno. Migrar a un ancla fija (19:00, la misma de
+  `ventanaNoche`, o 07:00): cada tramo pertenece entero al día donde arrancó.
+  Métricas objetivo: total 24 h, noche vs siestas por separado, tramo más largo.
+  Los datos crudos (`inicio`/`fin`) no cambian, solo la agregación.
