@@ -2,9 +2,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function babyData(babyId) {
+      return get(/databases/$(database)/documents/babies/$(babyId)).data;
+    }
     function esCuidador(babyId) {
       return request.auth != null &&
-        request.auth.uid in get(/databases/$(database)/documents/babies/$(babyId)).data.cuidadores;
+             request.auth.uid in babyData(babyId).cuidadores;
     }
 
     match /users/{uid} {
@@ -12,18 +15,33 @@ service cloud.firestore {
     }
 
     match /babies/{babyId} {
-      allow read: if request.auth != null && request.auth.uid in resource.data.cuidadores;
+      allow read:   if request.auth != null && request.auth.uid in resource.data.cuidadores;
       allow create: if request.auth != null && request.auth.uid in request.resource.data.cuidadores;
-      allow update, delete: if request.auth != null && request.auth.uid in resource.data.cuidadores;
+      allow delete: if request.auth != null && request.auth.uid in resource.data.cuidadores;
+
+      // El cliente puede editar el bebé, pero NO tocar cuidadores[],
+      // salvo para quitarse a sí mismo ("Salir de este bebé").
+      allow update: if request.auth != null
+                    && request.auth.uid in resource.data.cuidadores
+                    && (
+                         request.resource.data.cuidadores == resource.data.cuidadores
+                         || request.resource.data.cuidadores ==
+                            resource.data.cuidadores.removeAll([request.auth.uid])
+                       );
 
       match /registros/{registroId} {
         allow read, write: if esCuidador(babyId);
       }
     }
 
-    // los invites se generan y canjean solo vía Cloud Functions
     match /invites/{code} {
-      allow read, write: if false;
+      // Generar: solo un cuidador del bebé, y siempre sin usar.
+      allow create: if esCuidador(request.resource.data.babyId)
+                    && request.resource.data.usado == false;
+      // Leer y revocar: cuidadores del bebé del invite.
+      allow read, delete: if esCuidador(resource.data.babyId);
+      // El canje lo hace canjearInvite con Admin SDK, no el cliente.
+      allow update: if false;
     }
   }
 }
