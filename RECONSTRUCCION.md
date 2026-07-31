@@ -220,3 +220,6 @@ de calendario escritos a mano.
   870 kB al terminar el paso 5). Revisar imports de barril (`date-fns`,
   locales, lucide) con vite-bundle-visualizer antes de dar por cerrada la
   reconstrucción.
+- `setEmoji` existe en DataContext pero ningún componente lo llama: el emoji
+  solo se elige al crear el bebé y después no hay UI para cambiarlo. Agregar
+  el selector de 8 emojis a la sección de datos del bebé en Ajustes.
