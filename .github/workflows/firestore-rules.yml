@@ -1,0 +1,44 @@
+# Deploy de las reglas de Firestore.
+#
+# Va aparte del workflow de Hosting a propósito: si la credencial no alcanza,
+# falla esto solo y el deploy de la app sigue saliendo.
+#
+# PERMISOS: la service account de FIREBASE_SERVICE_ACCOUNT_CIANDUERME_6A534 fue
+# creada para Hosting y puede no tener permiso sobre las reglas. Si este job
+# falla con 403, hay dos caminos:
+#   1. darle el rol "Firebase Rules Admin" (roles/firebaserules.admin) a esa
+#      misma service account en la consola de IAM, o
+#   2. borrar este workflow y seguir deployando a mano:
+#      npx firebase-tools deploy --only firestore:rules --project cianduerme-6a534
+# Es un deploy cada varios meses; no vale la pena pelearlo.
+name: Deploy Firestore rules on merge
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - firestore.rules
+      - firestore.indexes.json
+  workflow_dispatch:
+
+jobs:
+  deploy_rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Escribir la credencial en un archivo
+        env:
+          SA_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CIANDUERME_6A534 }}
+        run: printenv SA_JSON > "$RUNNER_TEMP/service-account.json"
+      - name: Deploy de reglas
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/service-account.json
+        run: >
+          npx --yes firebase-tools@latest deploy
+          --only firestore:rules
+          --project cianduerme-6a534
+          --non-interactive
