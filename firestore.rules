@@ -45,6 +45,32 @@ service cloud.firestore {
         && (!('fin' in d) || d.fin == null || d.fin is timestamp);
     }
 
+    // Forma válida de una comida. El cliente ya sanea momento y aceptacion en
+    // ComidaContext, pero un bundle viejo en otro teléfono no pasa por ahí.
+    //
+    // hasOnly cierra el conjunto de campos: nada que no esté en esta lista
+    // entra. Eso implica que agregar un campo (paso 2: alérgenos) pide tocar
+    // esta función ANTES de escribirlo.
+    //
+    // Ojo: Rules no tiene iteración, así que no se puede exigir que cada
+    // elemento de `alimentos` sea un {id, nombre} de strings. Lo único
+    // verificable es que sea una lista y que no sea absurdamente larga; el
+    // contenido de cada elemento lo garantiza normalizarAlimento() y nada más.
+    function comidaValida(d) {
+      return d.keys().hasOnly(
+          ['inicio', 'momento', 'alimentos', 'aceptacion', 'reaccion', 'notas', 'creadoPor'])
+        && d.inicio is timestamp
+        && d.alimentos is list
+        && d.alimentos.size() <= 30
+        && (!('momento' in d) || d.momento == null
+            || d.momento in ['desayuno', 'almuerzo', 'merienda', 'cena', 'extra'])
+        && (!('aceptacion' in d) || d.aceptacion == null
+            || d.aceptacion in ['todo', 'parte', 'probo', 'rechazo'])
+        && (!('reaccion' in d) || d.reaccion == null || d.reaccion is string)
+        && (!('notas' in d) || d.notas == null || d.notas is string)
+        && (!('creadoPor' in d) || d.creadoPor == null || d.creadoPor is string);
+    }
+
     match /babies/{babyId} {
       // Ver: solo cuidadores. (La query usa array-contains uid, que cumple esto.)
       allow read: if autenticado() && request.auth.uid in resource.data.cuidadores;
@@ -76,12 +102,16 @@ service cloud.firestore {
       }
 
       // ── Alimentación complementaria ──
-      // Mismos permisos que registros: cualquier cuidador del bebé lee y
-      // escribe. A diferencia de registros, todavía NO se valida la forma acá;
-      // la sanea ComidaContext antes de escribir. Si se quiere una
-      // `comidaValida()` al estilo de `registroValido()`, es un cambio aparte.
+      // Igual que registros: lee y borra cualquier cuidador, y create/update
+      // validan la forma. Además creadoPor es inmutable, como en el bebé:
+      // dice quién cargó la comida, no quién la editó última.
       match /comidas/{comidaId} {
-        allow read, write: if esCuidadorDe(babyId);
+        allow read, delete: if esCuidadorDe(babyId);
+        allow create: if esCuidadorDe(babyId)
+          && comidaValida(request.resource.data);
+        allow update: if esCuidadorDe(babyId)
+          && comidaValida(request.resource.data)
+          && request.resource.data.creadoPor == resource.data.creadoPor;
       }
 
       // Plan semanal y lista de compras. No asume nada del id del documento:
