@@ -152,6 +152,9 @@ export function DataProvider({ children }) {
     if (activeBabyId) localStorage.setItem(CLAVE_BABY_ACTIVO, activeBabyId)
   }, [activeBabyId])
 
+  // Gate de suscripción: el bebé existe y el server ya lo confirmó. Se expone
+  // en el value porque ComidaContext (y lo que venga) necesita el mismo
+  // invariante; duplicarlo garantiza que un día queden desincronizados.
   const listo = !!baby && confirmados.has(baby.id)
 
   // --- registros del bebé activo ---
@@ -513,6 +516,7 @@ export function DataProvider({ children }) {
       codigoUrl,
       limpiarCodigoUrl: () => setCodigoUrl(null),
       baby,
+      listo,
       registros,
       seDurmio,
       seDesperto,
@@ -544,6 +548,7 @@ export function DataProvider({ children }) {
       babies,
       babiesCargando,
       baby,
+      listo,
       codigoUrl,
       registros,
       seDurmio,

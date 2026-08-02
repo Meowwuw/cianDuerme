@@ -74,6 +74,21 @@ service cloud.firestore {
         allow create, update: if esCuidadorDe(babyId)
           && registroValido(request.resource.data);
       }
+
+      // ── Alimentación complementaria ──
+      // Mismos permisos que registros: cualquier cuidador del bebé lee y
+      // escribe. A diferencia de registros, todavía NO se valida la forma acá;
+      // la sanea ComidaContext antes de escribir. Si se quiere una
+      // `comidaValida()` al estilo de `registroValido()`, es un cambio aparte.
+      match /comidas/{comidaId} {
+        allow read, write: if esCuidadorDe(babyId);
+      }
+
+      // Plan semanal y lista de compras. No asume nada del id del documento:
+      // la semana la elige el cliente.
+      match /planes/{planId} {
+        allow read, write: if esCuidadorDe(babyId);
+      }
     }
 
     // Preferencias por usuario (ej. notas de contexto apagadas). Cada quien solo

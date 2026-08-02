@@ -57,6 +57,63 @@ export function normalizarRegistro(id, data) {
   }
 }
 
+/** Ranuras del día. `extra` es lo que no cae en ninguna comida formal. */
+export const MOMENTOS = ['desayuno', 'almuerzo', 'merienda', 'cena', 'extra']
+
+/** Cuánto entró. Son ids, por eso `probo` va sin acento. */
+export const ACEPTACIONES = ['todo', 'parte', 'probo', 'rechazo']
+
+/**
+ * Nombre de alimento -> id estable: sin acentos, en minúsculas, con guiones.
+ * "Plátano maduro" -> "platano-maduro".
+ *
+ * OJO: normaliza mayúsculas y acentos, NO sinónimos. Si un cuidador escribe
+ * "plátano" y el otro "banana" quedan dos ids distintos y nada los cruza, así
+ * que la regla de los 3 días no los va a ver como el mismo alimento. Se
+ * resuelve con un catálogo chico con alias cuando exista la UI, no acá.
+ * Por eso `alimentos` guarda objetos y no strings: ese día no hace falta
+ * migrar nada, alcanza con agregarle un campo al objeto.
+ */
+export function idAlimento(nombre) {
+  return String(nombre || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
+ * Un alimento suelto -> { id, nombre }, o null si no tiene nombre usable.
+ * Acepta el string pelado por comodidad de quien lo escribe.
+ */
+export function normalizarAlimento(alimento) {
+  const nombre = (
+    typeof alimento === 'string' ? alimento : alimento?.nombre || ''
+  ).trim()
+  if (!nombre) return null
+  // Si el nombre es solo emojis o signos el slug queda vacío; ahí cae al
+  // nombre en minúsculas, para que el id nunca sea ''.
+  return { id: alimento?.id || idAlimento(nombre) || nombre.toLowerCase(), nombre }
+}
+
+/** Documento de comidas -> objeto de app. */
+export function normalizarComida(id, data) {
+  return {
+    id,
+    inicio: aMillis(data.inicio),
+    momento: data.momento || null,
+    alimentos: Array.isArray(data.alimentos)
+      ? data.alimentos.map(normalizarAlimento).filter(Boolean)
+      : [],
+    aceptacion: data.aceptacion || null,
+    reaccion: data.reaccion || null,
+    notas: data.notas || null,
+    creadoPor: data.creadoPor || null,
+  }
+}
+
 /**
  * Código de invitación legible en voz alta: sin I, L, O, 0, 1
  * para que no se confundan al dictarlo por teléfono.

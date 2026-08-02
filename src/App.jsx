@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from './context/AuthContext'
 import { DataProvider, useData } from './context/DataContext'
+import { ComidaProvider } from './context/ComidaContext'
 import Cargando from './components/Cargando'
 import Header from './components/Header'
 import BarraTabs from './components/BarraTabs'
@@ -27,7 +28,11 @@ export default function App() {
 
   return (
     <DataProvider>
-      <Ruteo />
+      {/* Adentro de DataProvider: necesita el bebé activo y su gate `listo`.
+          Sin bebé no se suscribe a nada, así que en Onboarding es inerte. */}
+      <ComidaProvider>
+        <Ruteo />
+      </ComidaProvider>
     </DataProvider>
   )
 }
