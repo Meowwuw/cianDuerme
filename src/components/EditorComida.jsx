@@ -185,7 +185,9 @@ export default function EditorComida({
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             onKeyDown={alTeclear}
-            placeholder="Zanahoria"
+            // Genérico a propósito: un ingrediente de ejemplo se confunde con
+            // los chips ya cargados justo arriba.
+            placeholder="Agregar ingrediente"
             aria-labelledby="lbl-alimentos"
             autoComplete="off"
           />
