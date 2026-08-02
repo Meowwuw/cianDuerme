@@ -63,6 +63,22 @@ export const MOMENTOS = ['desayuno', 'almuerzo', 'merienda', 'cena', 'extra']
 /** Cuánto entró. Son ids, por eso `probo` va sin acento. */
 export const ACEPTACIONES = ['todo', 'parte', 'probo', 'rechazo']
 
+/** Cómo se muestran esos ids en pantalla. */
+export const ETIQUETA_MOMENTO = {
+  desayuno: 'Desayuno',
+  almuerzo: 'Almuerzo',
+  merienda: 'Merienda',
+  cena: 'Cena',
+  extra: 'Entre horas',
+}
+
+export const ETIQUETA_ACEPTACION = {
+  todo: 'Todo',
+  parte: 'Parte',
+  probo: 'Probó',
+  rechazo: 'Rechazó',
+}
+
 /**
  * Nombre de alimento -> id estable: sin acentos, en minúsculas, con guiones.
  * "Plátano maduro" -> "platano-maduro".

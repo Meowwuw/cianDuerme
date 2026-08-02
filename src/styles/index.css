@@ -1737,3 +1737,57 @@ input {
   color: var(--deep);
   background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
+
+/* ── Alimentación complementaria ─────────────────────────────────────────
+   Lo único agregado al CSS original. Reusa las variables de tema, así que
+   se acomoda solo a los cuatro temas. */
+.tarjetas--cuatro {
+  grid-template-columns: repeat(2, 1fr);
+}
+.evento--comida {
+  border-left-color: var(--amarillo);
+}
+.evento--comida .evento-icono {
+  color: var(--deep);
+}
+.editor-atajo--activo {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--deep);
+}
+.editor-alimentos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.alimento-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--deep);
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.alimento-chip:active {
+  transform: scale(0.95);
+}
+.editor-alta {
+  display: flex;
+  gap: 8px;
+}
+.editor-alta .input-texto {
+  flex: 1;
+  min-width: 0;
+}
+.alimento-chip:focus-visible,
+.editor-atajo:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}

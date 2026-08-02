@@ -33,8 +33,12 @@ src/
   context/ThemeContext.jsx   4 temas, setea CSS vars en documentElement
   screens/                   Ahora, Hoy, Historial, Ajustes, Privacidad
   components/                Resumen (compartido Hoy/Historial), EditorRegistro,
-                             DatePicker, Mascota, header, tabs, modales
-  styles/index.css           hoja completa, nombres de clase en español
+                             EditorComida, DatePicker, Mascota, header, tabs;
+                             Modal, AtajosHora y BotonBorrar los comparten los
+                             dos editores
+  styles/index.css           hoja completa, nombres de clase en español. Todo
+                             lo de alimentación complementaria está al final,
+                             en un bloque aparte
 functions/index.js    canjearInvite (Node 20, Admin SDK)
 ```
 
@@ -93,6 +97,17 @@ válidas están en `MOMENTOS` y `ACEPTACIONES` de `lib/datos.js`.
   rechazarían, y como la PWA es `autoUpdate` el otro cuidador puede seguir un
   rato con el bundle viejo, que dibujaría cada comida como "Toma" en la línea
   de tiempo. Subcolección aparte.
+- **El editor de comidas es un componente propio, no un tercer chip de
+  `EditorRegistro`.** Ese está construido alrededor de un tramo con inicio,
+  fin y validación de solape; la comida es un instante con tres campos que los
+  otros dos tipos no tienen. Un chip más habría dejado un componente con dos
+  formas internas y condicionales por tipo repartidos: la versión en JSX del
+  `tipo: 'comida'` dentro de `registros` que ya se descartó. Lo compartido se
+  extrajo antes, sin cambio de comportamiento: `Modal`, `AtajosHora`,
+  `BotonBorrar`, más `DatePicker` y `TimePicker` que ya estaban sueltos.
+- **La tarjeta de Comidas aparece solo si ese día hubo alguna**, y ahí la
+  grilla pasa a 2×2 con `.tarjetas--cuatro`. Sin comidas, Hoy e Historial se
+  ven exactamente como antes.
 - **`ComidaContext` es un contexto propio** y consume `listo` de `DataContext`
   (el gate de `confirmados`). Ese booleano se exporta justamente para no
   duplicar el invariante: si se copiara, el día que cambie la condición la

@@ -80,6 +80,18 @@ export function registrosDelDia(registros, diaMs) {
     .sort((a, b) => a.inicio - b.inicio)
 }
 
+/**
+ * Comidas de ese día, ordenadas. A diferencia de los registros no hay que
+ * recortar nada: una comida es un instante, así que o cae adentro o no.
+ */
+export function comidasDelDia(comidas, diaMs) {
+  const desde = inicioDia(diaMs)
+  const hasta = finDia(diaMs)
+  return comidas
+    .filter((c) => c.inicio >= desde && c.inicio <= hasta)
+    .sort((a, b) => a.inicio - b.inicio)
+}
+
 /** ¿Se solapa este registro con algún otro? (lo usa el editor, paso 7) */
 export function haySolape(registros, { id, inicio, fin }) {
   const finReal = fin ?? Date.now()
