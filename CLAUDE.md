@@ -129,6 +129,23 @@ válidas están en `MOMENTOS` y `ACEPTACIONES` de `lib/datos.js`.
   nombre. No hay `recetas/` que mantener sincronizada. Las sugerencias
   aparecen con 2 letras, no autocompletan, no roban el Enter, y al elegir una
   suman los ingredientes que faltaban sin pisar los que ya cargaste.
+- **Alimento nuevo = su primera aparición en todo el historial del bebé**, y
+  la ventana de vigilancia son 3 días contados **desde esa primera vez**, no
+  desde la última: contando desde la última, mientras se la sigas dando la
+  ventana no cerraría nunca. Todo derivado, nada persistido: editar la fecha
+  de una comida vieja recalcula solo.
+- **Una reacción anotada bloquea la confirmación de TODOS los ingredientes de
+  esa comida.** La reacción vive en la comida, no en el alimento, así que no
+  existe el dato de cuál fue: darlo por conocido a uno "porque el sospechoso
+  era el otro" sería inventar. El costo de equivocarse es asimétrico —callar
+  una reacción real es mucho peor que esperar un par de días—, así que esto
+  es a propósito y no es un error de precisión que convenga "arreglar".
+- **Prioridad de las notas**: primero lo que pasó hoy con la comida (alimento
+  nuevo, alimento que cumple la ventana), después las cuatro de sueño y tomas
+  en su orden de siempre, y última la de vigilancia, que describe que *no*
+  pasó nada. Sin ese último matiz, durante los meses de introducción las notas
+  de sueño no aparecerían nunca. El interruptor de notas de contexto es uno
+  solo: las apaga a todas.
 - **`alimentos` son objetos `{id, nombre}`, no strings.** El `id` es un slug sin
   acentos que permite agrupar y detectar alimentos nuevos sin depender de cómo
   se escribió. Normaliza mayúsculas y acentos pero **no sinónimos**: "plátano"
@@ -153,11 +170,9 @@ válidas están en `MOMENTOS` y `ACEPTACIONES` de `lib/datos.js`.
    `vite-bundle-visualizer`; el bundle tiene margen para achicarse.
 5. CSS muerto que se puede borrar: `.ahora-bebe`, `.ajuste-bloque--proximo`,
    `.nota-fase`.
-6. `comidas` no valida forma en las reglas, a diferencia de `registros`
-   (`registroValido`). Un cuidador con el bundle viejo en caché puede escribir
-   cualquier cosa y las reglas la aceptan: la sanitización de `momento` y
-   `aceptacion` hoy es solo del cliente. Meter `comidaValida()` al cerrar el
-   paso 1, cuando el esquema ya haya pasado por la UI.
+6. El truncado de la línea de tiempo y `listaDeNombres` cortan a partir de 4
+   alimentos, cada uno por su lado y con criterios distintos ("y 2 más" vs
+   "4 alimentos"). Si algún día molesta, unificar.
 
 ## Contexto histórico
 

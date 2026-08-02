@@ -53,6 +53,7 @@ export default function EditorComida({
   const [inicio, setInicio] = useState(comida?.inicio ?? base)
   const [momento, setMomento] = useState(comida?.momento ?? null)
   const [aceptacion, setAceptacion] = useState(comida?.aceptacion ?? null)
+  const [reaccion, setReaccion] = useState(comida?.reaccion ?? '')
   const [notas, setNotas] = useState(comida?.notas ?? '')
   const [foco, setFoco] = useState(false)
   const [descartadas, setDescartadas] = useState(false)
@@ -254,6 +255,21 @@ export default function EditorComida({
       </div>
 
       <div className="editor-seccion">
+        <label className="editor-seccion-tit" htmlFor="reaccionComida">
+          ¿Alguna reacción? (opcional)
+        </label>
+        <input
+          id="reaccionComida"
+          className="input-texto"
+          value={reaccion}
+          onChange={(e) => setReaccion(e.target.value)}
+          // Categorías, no un ejemplo concreto, por lo mismo que el resto.
+          placeholder="Sarpullido, vómito, gases…"
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="editor-seccion">
         <label className="editor-seccion-tit" htmlFor="notasComida">
           Notas
         </label>
@@ -280,6 +296,7 @@ export default function EditorComida({
               momento,
               alimentos: alimentosFinales(),
               aceptacion,
+              reaccion,
               notas,
             })
           }
