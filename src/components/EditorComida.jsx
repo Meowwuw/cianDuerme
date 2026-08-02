@@ -201,7 +201,12 @@ export default function EditorComida({
         <span className="editor-seccion-tit" id="lbl-cuando">
           Cuándo
         </span>
-        <AtajosHora etiqueta="Atajos de hora" ahora={ahora} onElegir={setInicio} />
+        {/* Solo al crear: editando una comida vieja los atajos son ruido, y un
+            toque accidental le pisa la hora real. La condición vive acá, no en
+            AtajosHora, que lo comparte el editor de registros. */}
+        {esNueva && (
+          <AtajosHora etiqueta="Atajos de hora" ahora={ahora} onElegir={setInicio} />
+        )}
         <div className="editor-fh" aria-labelledby="lbl-cuando">
           <DatePicker
             value={inicio}
