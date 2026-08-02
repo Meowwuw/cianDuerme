@@ -187,8 +187,19 @@ function EventoRegistro({ registro: r, onEditar }) {
   )
 }
 
+/** Cuántos alimentos entran en el título antes de resumir el resto. */
+const ALIMENTOS_VISIBLES = 3
+
+function tituloDeComida(alimentos) {
+  const nombres = alimentos.map((a) => a.nombre)
+  if (nombres.length === 0) return 'Comida'
+  if (nombres.length <= ALIMENTOS_VISIBLES) return nombres.join(', ')
+  const visibles = nombres.slice(0, ALIMENTOS_VISIBLES).join(', ')
+  return `${visibles} y ${nombres.length - ALIMENTOS_VISIBLES} más`
+}
+
 function EventoComida({ comida: c, onEditar }) {
-  const titulo = c.alimentos.map((a) => a.nombre).join(', ') || 'Comida'
+  const titulo = tituloDeComida(c.alimentos)
   const momento = c.momento ? ` · ${ETIQUETA_MOMENTO[c.momento] ?? c.momento}` : ''
   return (
     <li className="timeline-item">

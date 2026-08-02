@@ -72,9 +72,11 @@ export const ETIQUETA_MOMENTO = {
   extra: 'Entre horas',
 }
 
+// "Parte" suelto, en la columna donde los otros eventos muestran la duración,
+// se lee como palabra cortada. "A medias" se sostiene solo.
 export const ETIQUETA_ACEPTACION = {
   todo: 'Todo',
-  parte: 'Parte',
+  parte: 'A medias',
   probo: 'Probó',
   rechazo: 'Rechazó',
 }
