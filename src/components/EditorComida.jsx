@@ -124,7 +124,9 @@ export default function EditorComida({
             onFocus={() => setFoco(true)}
             onBlur={() => setFoco(false)}
             onKeyDown={(e) => e.key === 'Escape' && setDescartadas(true)}
-            placeholder="Papilla con hígado"
+            // Categorías, no un plato concreto: un ejemplo real choca en gris
+            // con la sugerencia del banco que aparece abajo en negro.
+            placeholder="Papilla, puré, guiso…"
             autoComplete="off"
           />
           {verSugerencias && (
