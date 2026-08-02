@@ -67,7 +67,9 @@ export const NOTAS_COMIDA = {
   nuevoUno: (lista) => `Primera vez con ${lista}. Estos días se ve cómo le cae 💚`,
   nuevosVarios: (cuantos) =>
     `Hoy hubo ${cuantos} alimentos nuevos. Si aparece alguna reacción, va a costar saber cuál fue.`,
-  confirmado: (lista) => `Tres días dando ${lista}, sin nada anotado 💚`,
+  confirmadoUno: (lista) => `${capitalizar(lista)} lleva tres días sin nada anotado 💚`,
+  confirmadoVarios: (lista) =>
+    `${capitalizar(lista)} llevan tres días sin nada anotado 💚`,
   vigilanciaUno: (lista) =>
     `${capitalizar(lista)} sigue en los primeros días. Por ahora, sin novedad.`,
   vigilanciaVarios: (lista) =>
@@ -394,7 +396,10 @@ export function notaDeFase(registros, comidas = [], ahora = Date.now()) {
   if (nuevos.length > 1) return NOTAS_COMIDA.nuevosVarios(nuevos.length)
 
   const confirmados = alimentosConfirmadosDelDia(coms, ahora)
-  if (confirmados.length > 0) return NOTAS_COMIDA.confirmado(listaDeNombres(confirmados))
+  if (confirmados.length === 1)
+    return NOTAS_COMIDA.confirmadoUno(listaDeNombres(confirmados))
+  if (confirmados.length > 1)
+    return NOTAS_COMIDA.confirmadoVarios(listaDeNombres(confirmados))
 
   const delDia = registrosDelDia(regs, ahora)
   if (hayCluster(delDia)) return NOTAS.cluster
