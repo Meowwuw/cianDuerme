@@ -70,11 +70,16 @@ export default function EditorRegistro({
         <span className="editor-seccion-tit" id="lbl-inicio">
           Inicio
         </span>
-        <AtajosHora
-          etiqueta="Atajos de hora de inicio"
-          ahora={ahora}
-          onElegir={setInicio}
-        />
+        {/* Solo al crear: editando, el inicio ya está guardado y un toque
+            accidental lo pisa. El atajo del campo Fin sí queda siempre, porque
+            corregir el fin a la hora actual es frecuente y ahí vale el toque. */}
+        {esNuevo && (
+          <AtajosHora
+            etiqueta="Atajos de hora de inicio"
+            ahora={ahora}
+            onElegir={setInicio}
+          />
+        )}
         <div className="editor-fh" aria-labelledby="lbl-inicio">
           <DatePicker
             value={inicio}
