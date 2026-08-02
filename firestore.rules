@@ -1,47 +1,102 @@
 rules_version = '2';
+
+// Reglas definitivas de "Cian duerme".
+// Modelo: cada bebé tiene un array `cuidadores` (uids). Solo esos usuarios ven
+// y editan el bebé y sus registros. Las invitaciones (`invites/{code}`) permiten
+// que un usuario nuevo se sume como cuidador.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function babyData(babyId) {
-      return get(/databases/$(database)/documents/babies/$(babyId)).data;
-    }
-    function esCuidador(babyId) {
-      return request.auth != null &&
-             request.auth.uid in babyData(babyId).cuidadores;
+    function autenticado() {
+      return request.auth != null;
     }
 
-    match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+    // ¿El usuario actual es cuidador del bebé `babyId`?
+    function esCuidadorDe(babyId) {
+      return autenticado()
+        && request.auth.uid in get(/databases/$(database)/documents/babies/$(babyId)).data.cuidadores;
+    }
+
+    // ── Cambios permitidos en cuidadores[] al editar un bebé ──
+    // Desde el cliente NUNCA se agregan cuidadores (eso solo vía Cloud Function).
+    function noAgregaCuidadores() {
+      return request.resource.data.cuidadores.toSet()
+        .difference(resource.data.cuidadores.toSet()).size() == 0;
+    }
+    // Cuidadores que se quitan en este update (set).
+    function cuidadoresQuitados() {
+      return resource.data.cuidadores.toSet()
+        .difference(request.resource.data.cuidadores.toSet());
+    }
+    // Permitido: no agrega; y si quita, o no quita nada, o el que edita es el
+    // creador (puede quitar a cualquiera), o se quita solo a sí mismo.
+    function cambioCuidadoresOk() {
+      return noAgregaCuidadores() && (
+        cuidadoresQuitados().size() == 0
+        || request.auth.uid == resource.data.creadoPor
+        || cuidadoresQuitados() == [request.auth.uid].toSet()
+      );
+    }
+
+    // Forma válida de un registro. inicio/fin se guardan como Timestamp.
+    function registroValido(d) {
+      return d.tipo in ['sueño', 'toma']
+        && d.inicio is timestamp
+        && (!('fin' in d) || d.fin == null || d.fin is timestamp);
     }
 
     match /babies/{babyId} {
-      allow read:   if request.auth != null && request.auth.uid in resource.data.cuidadores;
-      allow create: if request.auth != null && request.auth.uid in request.resource.data.cuidadores;
-      allow delete: if request.auth != null && request.auth.uid in resource.data.cuidadores;
+      // Ver: solo cuidadores. (La query usa array-contains uid, que cumple esto.)
+      allow read: if autenticado() && request.auth.uid in resource.data.cuidadores;
 
-      // El cliente puede editar el bebé, pero NO tocar cuidadores[],
-      // salvo para quitarse a sí mismo ("Salir de este bebé").
-      allow update: if request.auth != null
-                    && request.auth.uid in resource.data.cuidadores
-                    && (
-                         request.resource.data.cuidadores == resource.data.cuidadores
-                         || request.resource.data.cuidadores ==
-                            resource.data.cuidadores.removeAll([request.auth.uid])
-                       );
+      // Crear: quien crea queda como único cuidador.
+      allow create: if autenticado()
+        && request.resource.data.cuidadores == [request.auth.uid]
+        && request.resource.data.creadoPor == request.auth.uid;
 
-      match /registros/{registroId} {
-        allow read, write: if esCuidador(babyId);
+      // Editar: cuidador existente. Además: `creadoPor` inmutable y cambios en
+      // cuidadores[] acotados (no agrega; solo quitarse a sí mismo, salvo el
+      // creador que puede quitar a otros). Sumar cuidadores va por la Cloud
+      // Function `canjearInvite` (Admin SDK, saltea reglas).
+      allow update: if autenticado()
+        && request.auth.uid in resource.data.cuidadores
+        && request.resource.data.creadoPor == resource.data.creadoPor
+        && cambioCuidadoresOk();
+
+      // Borrar el bebé (y en cascada sus datos): SOLO el creador (creadoPor).
+      // Los demás cuidadores solo pueden "Salir" (quitarse de cuidadores).
+      allow delete: if autenticado() && request.auth.uid == resource.data.creadoPor;
+
+      // Registros (sueño / toma): solo cuidadores del bebé padre.
+      // create/update validan la forma; delete no lleva datos.
+      match /registros/{regId} {
+        allow read, delete: if esCuidadorDe(babyId);
+        allow create, update: if esCuidadorDe(babyId)
+          && registroValido(request.resource.data);
       }
     }
 
+    // Preferencias por usuario (ej. notas de contexto apagadas). Cada quien solo
+    // lee/escribe SU propio doc; nadie el de otro.
+    match /users/{uid} {
+      allow read, write: if autenticado() && request.auth.uid == uid;
+    }
+
     match /invites/{code} {
-      // Generar: solo un cuidador del bebé, y siempre sin usar.
-      allow create: if esCuidador(request.resource.data.babyId)
-                    && request.resource.data.usado == false;
-      // Leer y revocar: cuidadores del bebé del invite.
-      allow read, delete: if esCuidador(resource.data.babyId);
-      // El canje lo hace canjearInvite con Admin SDK, no el cliente.
+      // Ya NO se lee ni se canjea el invite desde el cliente: el canje lo hace
+      // la Cloud Function `canjearInvite` (Admin SDK, saltea estas reglas).
+      allow get, list: if false;
+
+      // Crear: un cuidador del bebé genera el invite para su bebé.
+      allow create: if autenticado()
+        && request.resource.data.creadoPor == request.auth.uid
+        && esCuidadorDe(request.resource.data.babyId);
+
+      // Canjear (marcar usado) NO se permite desde el cliente.
       allow update: if false;
+
+      // Revocar / regenerar: un cuidador del bebé borra el invite.
+      allow delete: if autenticado() && esCuidadorDe(resource.data.babyId);
     }
   }
 }
