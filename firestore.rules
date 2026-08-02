@@ -49,8 +49,9 @@ service cloud.firestore {
     // ComidaContext, pero un bundle viejo en otro teléfono no pasa por ahí.
     //
     // hasOnly cierra el conjunto de campos: nada que no esté en esta lista
-    // entra. Eso implica que agregar un campo (paso 2: alérgenos) pide tocar
-    // esta función ANTES de escribirlo.
+    // entra. Eso implica que agregar un campo pide tocar esta función ANTES
+    // de que el cliente lo escriba, o el write rebota entero. Ya pasó con
+    // `nombre` (paso 1.5); el próximo es el de alérgenos del paso 2.
     //
     // Ojo: Rules no tiene iteración, así que no se puede exigir que cada
     // elemento de `alimentos` sea un {id, nombre} de strings. Lo único
@@ -58,10 +59,12 @@ service cloud.firestore {
     // contenido de cada elemento lo garantiza normalizarAlimento() y nada más.
     function comidaValida(d) {
       return d.keys().hasOnly(
-          ['inicio', 'momento', 'alimentos', 'aceptacion', 'reaccion', 'notas', 'creadoPor'])
+          ['inicio', 'nombre', 'momento', 'alimentos', 'aceptacion', 'reaccion',
+           'notas', 'creadoPor'])
         && d.inicio is timestamp
         && d.alimentos is list
         && d.alimentos.size() <= 30
+        && (!('nombre' in d) || d.nombre == null || d.nombre is string)
         && (!('momento' in d) || d.momento == null
             || d.momento in ['desayuno', 'almuerzo', 'merienda', 'cena', 'extra'])
         && (!('aceptacion' in d) || d.aceptacion == null
