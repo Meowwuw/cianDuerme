@@ -123,10 +123,10 @@ válidas están en `MOMENTOS` y `ACEPTACIONES` de `lib/datos.js`.
 5. CSS muerto que se puede borrar: `.ahora-bebe`, `.ajuste-bloque--proximo`,
    `.nota-fase`.
 6. `comidas` no valida forma en las reglas, a diferencia de `registros`
-   (`registroValido`). Si se quiere una `comidaValida()`, es un cambio aparte.
-7. La UI de "Borrar bebé" se le ofrece a cualquier cuidador, pero las reglas
-   solo dejan borrar al creador (`creadoPor`): a los demás les va a dar
-   `permission-denied`. Es así en el original; revisar cuando se toque Ajustes.
+   (`registroValido`). Un cuidador con el bundle viejo en caché puede escribir
+   cualquier cosa y las reglas la aceptan: la sanitización de `momento` y
+   `aceptacion` hoy es solo del cliente. Meter `comidaValida()` al cerrar el
+   paso 1, cuando el esquema ya haya pasado por la UI.
 
 ## Contexto histórico
 
