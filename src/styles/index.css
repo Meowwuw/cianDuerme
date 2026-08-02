@@ -1791,3 +1791,44 @@ input {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
+.editor-sugerible {
+  position: relative;
+}
+.sugerencias {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border-radius: var(--radio-sm);
+  box-shadow: var(--sombra);
+}
+.sugerencia {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radio-sm);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+.sugerencia:active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.sugerencia-nombre {
+  font-family: var(--fuente-display);
+  font-weight: 600;
+}
+.sugerencia-alimentos {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+.sugerencia:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -2px;
+}

@@ -51,7 +51,8 @@ babies/{babyId}   { nombre, apodo, emoji, fechaNacimiento, cuidadores: [uid],
                     estadoActual: { modo: 'dormido'|'despierto', desde },
                     tomaActiva: { inicio } | null }
 babies/{babyId}/registros/{id}   { tipo: 'sueño'|'toma', inicio, fin }
-babies/{babyId}/comidas/{id}     { inicio, momento, alimentos: [{id, nombre}],
+babies/{babyId}/comidas/{id}     { inicio, nombre, momento,
+                                   alimentos: [{id, nombre}],
                                    aceptacion, reaccion, notas, creadoPor }
 babies/{babyId}/planes/{id}      (reservado: plan semanal y compras, sin usar)
 invites/{CODIGO}  { babyId, creadoPor, creadoEn, expiraEn, usado, usadoPor, usadoEn }
@@ -113,6 +114,21 @@ válidas están en `MOMENTOS` y `ACEPTACIONES` de `lib/datos.js`.
   duplicar el invariante: si se copiara, el día que cambie la condición la
   copia queda vieja y el síntoma es una suscripción que dispara antes de
   tiempo, muy molesto de diagnosticar.
+- **`comidaValida()` usa `keys().hasOnly()`, así que agregar un campo a una
+  comida rompe los writes hasta que las reglas estén publicadas.** El orden es
+  siempre: cambiar las reglas, deployarlas, y recién después escribir el campo
+  desde el cliente. Los dos workflows corren en paralelo sobre el mismo push,
+  así que hay un minuto de ventana; con dos cuidadores no importa, pero está
+  bueno saber por qué rebota si rebota.
+- **El `nombre` del plato es decorativo; `alimentos` es el dato.** En la línea
+  de tiempo gana el nombre si está, pero en el editor los dos campos conviven
+  y si hay nombre sin ingredientes aparece un aviso: la regla de los 3 días
+  del paso 2 solo mira `alimentos`.
+- **El banco de platos no es una colección**: `bancoDeComidas()` lo deriva de
+  las comidas ya registradas, quedándose con la versión más reciente de cada
+  nombre. No hay `recetas/` que mantener sincronizada. Las sugerencias
+  aparecen con 2 letras, no autocompletan, no roban el Enter, y al elegir una
+  suman los ingredientes que faltaban sin pisar los que ya cargaste.
 - **`alimentos` son objetos `{id, nombre}`, no strings.** El `id` es un slug sin
   acentos que permite agrupar y detectar alimentos nuevos sin depender de cómo
   se escribió. Normaliza mayúsculas y acentos pero **no sinónimos**: "plátano"

@@ -97,10 +97,11 @@ export function ComidaProvider({ children }) {
   )
 
   const agregarComida = useCallback(
-    async ({ inicio, momento, alimentos, aceptacion, reaccion, notas }) => {
+    async ({ inicio, nombre, momento, alimentos, aceptacion, reaccion, notas }) => {
       if (!baby) return
       await addDoc(refComidas(), {
         inicio: aTimestamp(inicio ?? Date.now()),
+        nombre: textoONull(nombre),
         momento: opcionValida(momento, MOMENTOS),
         alimentos: listaAlimentos(alimentos),
         aceptacion: opcionValida(aceptacion, ACEPTACIONES),
@@ -119,6 +120,7 @@ export function ComidaProvider({ children }) {
       if (!baby) return
       const patch = {}
       if ('inicio' in cambios) patch.inicio = aTimestamp(cambios.inicio)
+      if ('nombre' in cambios) patch.nombre = textoONull(cambios.nombre)
       if ('momento' in cambios) {
         patch.momento = opcionValida(cambios.momento, MOMENTOS)
       }

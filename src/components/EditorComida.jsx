@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { X } from 'lucide-react'
 import {
   ACEPTACIONES,
   ETIQUETA_ACEPTACION,
   ETIQUETA_MOMENTO,
   MOMENTOS,
+  bancoDeComidas,
+  idAlimento,
   normalizarAlimento,
 } from '../lib/datos'
 import { HORA, inicioDia } from '../lib/resumen'
@@ -17,13 +19,21 @@ import TimePicker from './TimePicker'
 
 const MEDIODIA = 12 * HORA
 
+/** Sugerencias de nombre: pocas, y recién cuando lo escrito dice algo. */
+const MIN_LETRAS_SUGERENCIA = 2
+const MAX_SUGERENCIAS = 4
+
 /**
  * Editor propio, no un tercer chip de EditorRegistro: una comida es un
- * instante (no tiene fin ni solape) y tiene tres campos que sueño y toma no
+ * instante (no tiene fin ni solape) y tiene campos que sueño y toma no
  * tienen. Comparte el armazón del modal, los atajos, los pickers y el borrado.
+ *
+ * `comidas` son todas las del bebé, para el banco de nombres ya usados; es el
+ * mismo patrón con que EditorRegistro recibe `registros` para el solape.
  */
 export default function EditorComida({
   comida = null,
+  comidas = [],
   diaMs,
   onGuardar,
   onBorrar,
@@ -37,12 +47,41 @@ export default function EditorComida({
   const otroDia = diaMs != null && inicioDia(diaMs) !== inicioDia(ahora)
   const base = Math.min(otroDia ? inicioDia(diaMs) + MEDIODIA : ahora, ahora)
 
+  const [nombre, setNombre] = useState(comida?.nombre ?? '')
   const [alimentos, setAlimentos] = useState(comida?.alimentos ?? [])
   const [texto, setTexto] = useState('')
   const [inicio, setInicio] = useState(comida?.inicio ?? base)
   const [momento, setMomento] = useState(comida?.momento ?? null)
   const [aceptacion, setAceptacion] = useState(comida?.aceptacion ?? null)
   const [notas, setNotas] = useState(comida?.notas ?? '')
+  const [foco, setFoco] = useState(false)
+  const [descartadas, setDescartadas] = useState(false)
+
+  const banco = useMemo(() => bancoDeComidas(comidas), [comidas])
+
+  // Coincidencias por texto normalizado, sin la que ya escribiste entera.
+  const sugerencias = useMemo(() => {
+    const q = idAlimento(nombre)
+    if (q.length < MIN_LETRAS_SUGERENCIA) return []
+    return banco
+      .filter((b) => {
+        const k = idAlimento(b.nombre)
+        return k.includes(q) && k !== q
+      })
+      .slice(0, MAX_SUGERENCIAS)
+  }, [banco, nombre])
+
+  const verSugerencias = foco && !descartadas && sugerencias.length > 0
+
+  /** Precargar nunca pisa: solo suma los ingredientes que faltaban. */
+  const usarSugerencia = (s) => {
+    setNombre(s.nombre)
+    setDescartadas(true)
+    setAlimentos((previos) => {
+      const ids = new Set(previos.map((a) => a.id))
+      return [...previos, ...s.alimentos.filter((a) => !ids.has(a.id))]
+    })
+  }
 
   /** Lo tipeado y todavía no agregado cuenta igual: nadie pierde una pera. */
   const alimentosFinales = () => {
@@ -70,9 +109,60 @@ export default function EditorComida({
   return (
     <Modal titulo={esNueva ? 'Agregar comida' : 'Editar comida'} onCerrar={onCancelar}>
       <div className="editor-seccion">
+        <label className="editor-seccion-tit" htmlFor="nombreComida">
+          Nombre del plato (opcional)
+        </label>
+        <div className="editor-sugerible">
+          <input
+            id="nombreComida"
+            className="input-texto"
+            value={nombre}
+            onChange={(e) => {
+              setNombre(e.target.value)
+              setDescartadas(false)
+            }}
+            onFocus={() => setFoco(true)}
+            onBlur={() => setFoco(false)}
+            onKeyDown={(e) => e.key === 'Escape' && setDescartadas(true)}
+            placeholder="Papilla con hígado"
+            autoComplete="off"
+          />
+          {verSugerencias && (
+            <ul className="sugerencias">
+              {sugerencias.map((s) => (
+                <li key={s.nombre}>
+                  <button
+                    type="button"
+                    className="sugerencia"
+                    // El blur del input dispara antes que el click; sin esto la
+                    // lista se cierra y el toque se pierde.
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => usarSugerencia(s)}
+                  >
+                    <span className="sugerencia-nombre">{s.nombre}</span>
+                    {s.alimentos.length > 0 && (
+                      <span className="sugerencia-alimentos">
+                        {s.alimentos.map((a) => a.nombre).join(', ')}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="editor-seccion">
         <span className="editor-seccion-tit" id="lbl-alimentos">
           Alimentos
         </span>
+        {nombre.trim() !== '' && alimentos.length === 0 && (
+          <p className="editor-nota">
+            El nombre es solo una etiqueta. Los ingredientes son lo que queda
+            registrado de lo que probó.
+          </p>
+        )}
         {alimentos.length > 0 && (
           <div className="editor-alimentos">
             {alimentos.map((a) => (
@@ -177,6 +267,7 @@ export default function EditorComida({
           onClick={() =>
             onGuardar({
               inicio,
+              nombre,
               momento,
               alimentos: alimentosFinales(),
               aceptacion,

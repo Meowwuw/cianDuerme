@@ -147,6 +147,7 @@ export default function Resumen({ resumen }) {
       {editorComida && (
         <EditorComida
           comida={editorComida.comida ?? null}
+          comidas={comidas}
           diaMs={diaMs}
           onGuardar={guardarComida}
           onBorrar={borrarComidaActual}
@@ -199,7 +200,8 @@ function tituloDeComida(alimentos) {
 }
 
 function EventoComida({ comida: c, onEditar }) {
-  const titulo = tituloDeComida(c.alimentos)
+  // Si le pusiste nombre al plato, gana el nombre; si no, los ingredientes.
+  const titulo = c.nombre || tituloDeComida(c.alimentos)
   const momento = c.momento ? ` · ${ETIQUETA_MOMENTO[c.momento] ?? c.momento}` : ''
   return (
     <li className="timeline-item">

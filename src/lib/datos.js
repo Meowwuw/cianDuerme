@@ -121,6 +121,9 @@ export function normalizarComida(id, data) {
   return {
     id,
     inicio: aMillis(data.inicio),
+    // Nombre del plato: decorativo. El dato real son los `alimentos`, que es
+    // lo que va a mirar la regla de los 3 días.
+    nombre: data.nombre || null,
     momento: data.momento || null,
     alimentos: Array.isArray(data.alimentos)
       ? data.alimentos.map(normalizarAlimento).filter(Boolean)
@@ -130,6 +133,28 @@ export function normalizarComida(id, data) {
     notas: data.notas || null,
     creadoPor: data.creadoPor || null,
   }
+}
+
+/**
+ * Banco de comidas: los platos ya usados con este bebé, del más reciente al
+ * más viejo, uno por nombre. No hay colección `recetas/`: esto se deriva de
+ * lo ya registrado, así que no hay nada que mantener sincronizado.
+ *
+ * Se queda con la versión más reciente de cada nombre porque los ingredientes
+ * de una papilla cambian con el tiempo y la última es la que vale.
+ */
+export function bancoDeComidas(comidas) {
+  const porNombre = new Map()
+  for (const c of comidas) {
+    if (!c.nombre) continue
+    const clave = idAlimento(c.nombre)
+    if (!clave) continue
+    const previo = porNombre.get(clave)
+    if (!previo || c.inicio > previo.inicio) porNombre.set(clave, c)
+  }
+  return [...porNombre.values()]
+    .sort((a, b) => b.inicio - a.inicio)
+    .map((c) => ({ nombre: c.nombre, alimentos: c.alimentos }))
 }
 
 /**
